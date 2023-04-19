@@ -51,7 +51,7 @@ void dfs(int **graph, int n, int cur, int *visited, node *finish, int complNum) 
   - array of visited nodes: 'visited'
   - completion number: 'complNum
   - finish time: 'finish'
-  Behavior: Updates the visited array, sets the complNum field of the curr node in the finish array to   complNum. Recursively calls itself on unvisited nodes until they are all complete
+  Behavior: Updates the visited array, sets the complNum field of the curr node in the finish array to complNum. Recursively calls itself on unvisited nodes until they are all complete
 */
 
 void initGraph(int*** graph, int n){
@@ -60,6 +60,7 @@ void initGraph(int*** graph, int n){
     (*graph)[i] = (int*)calloc(n+1, sizeof(int));
   }
 }
+// initializes memory to store an adjacency matrix
 
 int loadGraph(int** graph, int m) {
   int a, b, w;
@@ -68,6 +69,7 @@ int loadGraph(int** graph, int m) {
     graph[a][b] = w;
   }
 }
+// loads .txt into adjacency matrix
 
 void init_finish(node** finish, int n) {
     *finish = (node*)calloc(n+1, sizeof(node));
@@ -76,6 +78,7 @@ void init_finish(node** finish, int n) {
         (*finish)[i].finish = 0;
     }
 }
+// creates a separate matrix for finish times
 
 void order_topological(int** graph, int n, int* visited, node* finish, int* j, int i) {
     if(visited[i] != 1) {
@@ -83,10 +86,12 @@ void order_topological(int** graph, int n, int* visited, node* finish, int* j, i
         (*j)++;
     }
 }
+// sorts nodes in topological order
 
 void process_topological(node* finish, int n) {
     qsort((void*)finish, n+1, sizeof(node), compare);
 }
+// processes nodes in topological order
 
 void init_dp(int*** dp, int n) {
     *dp = (int**)malloc(sizeof(int*)*(n+1));
@@ -96,6 +101,7 @@ void init_dp(int*** dp, int n) {
         (*dp)[i][1] = 0;
     }
 }
+// init allocation for dp table
 
 int find_node1_index(node* finish, int n) {
     for(int j = 0; j <= n; j++) {
@@ -105,6 +111,7 @@ int find_node1_index(node* finish, int n) {
     }
     return -1;
 }
+// find where the finish time is 1, return it, otw return -1
 
 void relax(int** graph, int** dp, node* finish, int n, int j) {
     dp[1][0] = 0;
@@ -123,6 +130,7 @@ void relax(int** graph, int** dp, node* finish, int n, int j) {
         }
     }
 }
+// relax, but backwards
 
 void count_distinct_paths(int** graph, int** dp, node* finish, int n, int j) {
     int cur;
@@ -137,6 +145,7 @@ void count_distinct_paths(int** graph, int** dp, node* finish, int n, int j) {
         }
     }
 }
+// # of distinct path calculations
 
 void print_results(int** dp, int n) {
     if(dp[n][0] > -1) {
@@ -146,6 +155,7 @@ void print_results(int** dp, int n) {
         printf("This node is not reachable.");
 }
 }
+// simple print
 
 
 
@@ -155,14 +165,18 @@ int main() {
     node* finish;
     int* visited;
     int** dp;
+    // init pointers for all functions
 
     scanf("%d%d", &n, &m);
+    // get V and E
 
     initGraph(&graph, n);
     loadGraph(graph, m);
+    // build graphs using V and E
 
     visited = (int*)calloc(n+1, sizeof(int));
     init_finish(&finish, n);
+    // make finish array and visited array
 
     int j = 0;
     for(int i = 1; i <= n; i++) {
@@ -189,100 +203,7 @@ int main() {
         free(dp[i]);
     }
     free(dp);
+    // free everything~
 
     return 0;
 }
-
-/*
-  // Init variables
-  int i,j,k,n,m,a,b,w,cur;
-  
-  // Read through the .txt and represent through an adjacency matrix
-  scanf("%d%d",&n,&m);
-  int **graph = (int**)malloc(sizeof(int*)*(n+1));
-  int *visited = (int*)calloc(n+1,sizeof(int));
-  node *finish = (node*)calloc(n+1, sizeof(node));
-
-  for(i = 0; i <= n; i++){
-    graph[i] = (int*)calloc(n+1, sizeof(int));
-  }
-  // load in the v, e, and w
-  for(i = 0; i < m; i++) {
-    scanf("%d%d%d", &a, &b, &w);
-    graph[a][b] = w;
-  }
-
-  // Order in topological order
-  time = 0;
-  for(i = 0; i <= n; i++) {
-    finish[i].cur = i;
-    finish[i].finish = 0;
-  }
-  j = 1;
-  for(i = 1; i <= n; i++){
-    if(visited[i] != 1){
-      dfs(graph, n, i, visited, finish, j);
-      j += 1;
-    }
-  }
-
-  // Sort in descending order
-  qsort((void*)finish, n+1, sizeof(node), compare);
-
-  // Process in ascending order
-  int **dp = (int**)malloc(sizeof(int*)*(n+1));
-  for(i = 0; i <= n; i++){
-    dp[i] = (int*)calloc(2,sizeof(int));
-    // dp[i][0] represents the length of the longest path from 1 to i
-    dp[i][0] = -1;
-    // dp[i][1] represents the number of different paths whose length is dp[i][0]
-    dp[i][1] = 0;
-  }
-
-  // Find the place of node 1 in the finish array
-  for(j = 0; j <= n; j++) {
-    if(finish[j].cur == 1) {
-      break;
-    }
-  }
-
-  // Relax
-  dp[1][0] = 0;
-  dp[1][1] = 1;
-  for(i = j; i <= n; i++) {
-    cur = finish[i].cur;
-    if(dp[cur][0] != -1){
-      for(k = 1; k <= n; k++){
-        if(graph[cur][k] > 0){
-          if(dp[k][0] < dp[cur][0] + graph[cur][k]) {
-            dp[k][0] = dp[cur][0] + graph[cur][k];
-          }
-        }
-      }
-    }
-  }
-
- // Distinct paths calculation
- for(i = j + 1; i <= n; i++) {
-   cur = finish[i].cur;
-   for(k = 1; k <= n; k++) {
-     if(graph[k][cur] > 0) {
-       if(dp[cur][0] == dp[k][0] + graph[k][cur]) {
-         dp[cur][1] += dp[k][1];
-       }
-     }
-   }
- }
-
- if(dp[n][0] > -1) {
-   printf("longest path: %d\n", dp[n][0]);
-   printf("number of longest paths: %d\n", dp[n][1]);
-   // prints number of distinct paths, calculated in function above
- } else {
-   printf("Node %d is not reachable from Node 1\n", n);
-   // error statement in case some nonsense is encountered
- }
- return (0);
- // function returns 0 to indicate successful execution
-}
-*/
